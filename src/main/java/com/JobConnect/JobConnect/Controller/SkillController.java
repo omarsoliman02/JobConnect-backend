@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.JobConnect.JobConnect.Model.Skill;
@@ -29,6 +30,12 @@ public class SkillController {
     @GetMapping
     public ResponseEntity<List<Skill>> getAllSkills() {
         List<Skill> skills = skillService.getAllSkills();
+        return new ResponseEntity<>(skills, HttpStatus.OK);
+    }
+    
+    @GetMapping("/search")
+    public ResponseEntity<List<Skill>> searchSkills(@RequestParam String query) {
+        List<Skill> skills = skillService.searchSkillsByName(query);
         return new ResponseEntity<>(skills, HttpStatus.OK);
     }
     

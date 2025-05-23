@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,7 +30,7 @@ public class Experience {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "applicant_id")
-    @JsonBackReference(value = "applicant-experiences")
+    @JsonIgnoreProperties({"experiences", "applications", "skills"})
     private Applicant applicant;
 
     public Experience() {}

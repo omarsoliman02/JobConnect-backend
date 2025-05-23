@@ -48,17 +48,17 @@ INSERT INTO experiences (company_name, role, start_date, end_date, applicant_id)
   ('Vandelay Ind.', 'Sales Rep',     '2021-05-01', '2022-04-30',10);
 
 -- 5. Jobs (two per company)
-INSERT INTO jobs (title, description, location, company_id) VALUES
-  ('Backend Engineer',    'Build REST APIs',                   'Paris',     1),
-  ('Fullstack Developer', 'Java + Angular features',          'Lyon',      1),
-  ('DevOps Engineer',     'Manage CI/CD & Docker',             'Marseille', 2),
-  ('Frontend Developer',  'React single-page apps',            'Nice',      2),
-  ('Data Analyst',        'SQL queries & dashboards',          'Bordeaux',  3),
-  ('E-Learning Specialist','Course content dev',               'Toulouse',  3),
-  ('QA Engineer',         'Automated tests',                   'Lille',     4),
-  ('Product Manager',     'Lead health app roadmap',           'Strasbourg',4),
-  ('Cloud Architect',     'Design AWS infrastructure',         'Rennes',    5),
-  ('Sustainability Lead', 'Green energy projects',             'Nantes',    5);
+INSERT INTO jobs (title, description, location, job_type, min_salary, max_salary, experience_level, company_id) VALUES
+  ('Backend Engineer',    'Build REST APIs',                   'Paris',     'FULL_TIME', 50000, 70000, 'SENIOR',       1),
+  ('Fullstack Developer', 'Java + Angular features',          'Lyon',      'FULL_TIME', 45000, 65000, 'INTERMEDIATE', 1),
+  ('DevOps Engineer',     'Manage CI/CD & Docker',             'Marseille', 'CONTRACT',  60000, 80000, 'SENIOR',       2),
+  ('Frontend Developer',  'React single-page apps',            'Nice',      'FULL_TIME', 40000, 55000, 'INTERMEDIATE', 2),
+  ('Data Analyst',        'SQL queries & dashboards',          'Bordeaux',  'PART_TIME', 30000, 45000, 'ENTRY_LEVEL',  3),
+  ('E-Learning Specialist','Course content dev',               'Toulouse',  'FREELANCE', 25000, 40000, 'INTERMEDIATE', 3),
+  ('QA Engineer',         'Automated tests',                   'Lille',     'FULL_TIME', 35000, 50000, 'ENTRY_LEVEL',  4),
+  ('Product Manager',     'Lead health app roadmap',           'Strasbourg','FULL_TIME', 70000, 90000, 'EXECUTIVE',    4),
+  ('Cloud Architect',     'Design AWS infrastructure',         'Rennes',    'CONTRACT',  65000, 85000, 'SENIOR',       5),
+  ('Sustainability Lead', 'Green energy projects',             'Nantes',    'FULL_TIME', 55000, 75000, 'SENIOR',       5);
 
 -- 6. Applications (each of 10 applicants applies to 2 different jobs)
 INSERT INTO applications (applicant_id, job_id, applied_at) VALUES

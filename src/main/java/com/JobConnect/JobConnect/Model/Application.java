@@ -5,8 +5,9 @@ import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -17,35 +18,47 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "applications")
+@Schema(description = "Application entity representing a job application")
 public class Application {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Schema(description = "Unique identifier of the application", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "applicant_id")
-    @JsonBackReference(value = "applicant-applications")
-    private Applicant applicant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
-    @JsonBackReference(value = "job-applications")
+    @JsonIgnoreProperties({"applications", "company"})
+    @Schema(description = "Job being applied for")
     private Job job;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "applicant_id")
+    @JsonIgnoreProperties({"applications", "experiences", "skills"})
+    @Schema(description = "Applicant applying for the job")
+    private Applicant applicant;
+
+    @Schema(description = "Date and time when the application was submitted")
     private LocalDateTime appliedAt = LocalDateTime.now();
 
+    // Default constructor required by JPA
     public Application() {}
 
-    public Application(Applicant ap, Job jb) {
-        this.applicant = ap;
-        this.job = jb;
+    // Constructor with job and applicant
+    public Application(Job job, Applicant applicant) {
+        this.job = job;
+        this.applicant = applicant;
     }
 
+    // Getters and setters
     public UUID getId() { return id; }
-    public Applicant getApplicant() { return applicant; }
-    public void setApplicant(Applicant a) { this.applicant = a; }
+
     public Job getJob() { return job; }
-    public void setJob(Job j) { this.job = j; }
+    public void setJob(Job job) { this.job = job; }
+
+    public Applicant getApplicant() { return applicant; }
+    public void setApplicant(Applicant applicant) { this.applicant = applicant; }
+
     public LocalDateTime getAppliedAt() { return appliedAt; }
+    public void setAppliedAt(LocalDateTime appliedAt) { this.appliedAt = appliedAt; }
 }

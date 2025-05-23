@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,34 +22,91 @@ import com.JobConnect.JobConnect.Model.Application;
 import com.JobConnect.JobConnect.Model.Experience;
 import com.JobConnect.JobConnect.Service.ApplicantService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
-@RequestMapping("/api/applicants")
+@RequestMapping(value = "/api/applicants", 
+                produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Applicant", description = "Applicant management APIs")
 public class ApplicantController {
     
     @Autowired
     private ApplicantService applicantService;
     
     @GetMapping
+    @Operation(summary = "Get all applicants", description = "Retrieve a list of all applicants")
+    @ApiResponse(responseCode = "200", description = "Applicants found", 
+                 content = @Content(schema = @Schema(implementation = Applicant.class)))
     public ResponseEntity<List<Applicant>> getAllApplicants() {
         List<Applicant> applicants = applicantService.getAllApplicants();
         return new ResponseEntity<>(applicants, HttpStatus.OK);
     }
     
-    @PostMapping
-    public ResponseEntity<Applicant> createApplicant(@RequestBody Applicant applicant) {
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8"})
+    @Operation(summary = "Create an applicant", description = "Add a new applicant to the database")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Applicant created", 
+                     content = @Content(schema = @Schema(implementation = Applicant.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
+    })
+    public ResponseEntity<Applicant> createApplicant(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Applicant object that needs to be created",
+                required = true,
+                content = @Content(schema = @Schema(implementation = Applicant.class))
+            )
+            @RequestBody Applicant applicant) {
+        // Clear any provided ID - let the database generate it
+        applicant.setId(null);
+        
+        // Clear relationships that should be established separately
+        applicant.setApplications(null);
+        applicant.setExperiences(null);
+        applicant.setSkills(null);
+        
+        // Save the basic applicant
         Applicant savedApplicant = applicantService.saveApplicant(applicant);
         return new ResponseEntity<>(savedApplicant, HttpStatus.CREATED);
     }
     
     @GetMapping("/{applicantId}")
-    public ResponseEntity<Applicant> getApplicantById(@PathVariable UUID applicantId) {
+    @Operation(summary = "Get applicant by ID", description = "Retrieve a specific applicant by its UUID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Applicant found", 
+                     content = @Content(schema = @Schema(implementation = Applicant.class))),
+        @ApiResponse(responseCode = "404", description = "Applicant not found", content = @Content)
+    })
+    public ResponseEntity<Applicant> getApplicantById(
+            @Parameter(description = "UUID of the applicant to retrieve", required = true)
+            @PathVariable UUID applicantId) {
         Optional<Applicant> applicant = applicantService.getApplicantById(applicantId);
         return applicant.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     
-    @PutMapping("/{applicantId}")
-    public ResponseEntity<Applicant> updateApplicant(@PathVariable UUID applicantId, @RequestBody Applicant applicantDetails) {
+    @PutMapping(path = "/{applicantId}", consumes = {MediaType.APPLICATION_JSON_VALUE, "application/json;charset=UTF-8"})
+    @Operation(summary = "Update applicant", description = "Update an existing applicant by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Applicant updated", 
+                     content = @Content(schema = @Schema(implementation = Applicant.class))),
+        @ApiResponse(responseCode = "404", description = "Applicant not found", content = @Content),
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content)
+    })
+    public ResponseEntity<Applicant> updateApplicant(
+            @Parameter(description = "UUID of the applicant to update", required = true)
+            @PathVariable UUID applicantId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Updated applicant object",
+                required = true,
+                content = @Content(schema = @Schema(implementation = Applicant.class))
+            )
+            @RequestBody Applicant applicantDetails) {
         Optional<Applicant> optionalApplicant = applicantService.getApplicantById(applicantId);
         if (optionalApplicant.isPresent()) {
             Applicant applicant = optionalApplicant.get();
@@ -64,7 +122,14 @@ public class ApplicantController {
     }
     
     @DeleteMapping("/{applicantId}")
-    public ResponseEntity<Void> deleteApplicant(@PathVariable UUID applicantId) {
+    @Operation(summary = "Delete applicant", description = "Delete an applicant by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Applicant deleted", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Applicant not found", content = @Content)
+    })
+    public ResponseEntity<Void> deleteApplicant(
+            @Parameter(description = "UUID of the applicant to delete", required = true)
+            @PathVariable UUID applicantId) {
         Optional<Applicant> applicant = applicantService.getApplicantById(applicantId);
         if (applicant.isPresent()) {
             applicantService.deleteApplicant(applicantId);
@@ -75,7 +140,15 @@ public class ApplicantController {
     }
     
     @GetMapping("/{applicantId}/applications")
-    public ResponseEntity<List<Application>> getApplicationsByApplicantId(@PathVariable UUID applicantId) {
+    @Operation(summary = "Get applicant applications", description = "Retrieve all applications for a specific applicant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Applications found", 
+                     content = @Content(schema = @Schema(implementation = Application.class))),
+        @ApiResponse(responseCode = "404", description = "Applicant not found", content = @Content)
+    })
+    public ResponseEntity<List<Application>> getApplicationsByApplicantId(
+            @Parameter(description = "UUID of the applicant to retrieve applications for", required = true)
+            @PathVariable UUID applicantId) {
         Optional<Applicant> applicant = applicantService.getApplicantById(applicantId);
         if (applicant.isPresent()) {
             List<Application> applications = applicantService.getApplicationsByApplicantId(applicantId);
@@ -86,7 +159,15 @@ public class ApplicantController {
     }
     
     @GetMapping("/{applicantId}/experiences")
-    public ResponseEntity<List<Experience>> getExperiencesByApplicantId(@PathVariable UUID applicantId) {
+    @Operation(summary = "Get applicant experiences", description = "Retrieve all experiences for a specific applicant")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Experiences found", 
+                     content = @Content(schema = @Schema(implementation = Experience.class))),
+        @ApiResponse(responseCode = "404", description = "Applicant not found", content = @Content)
+    })
+    public ResponseEntity<List<Experience>> getExperiencesByApplicantId(
+            @Parameter(description = "UUID of the applicant to retrieve experiences for", required = true)
+            @PathVariable UUID applicantId) {
         Optional<Applicant> applicant = applicantService.getApplicantById(applicantId);
         if (applicant.isPresent()) {
             List<Experience> experiences = applicantService.getExperiencesByApplicantId(applicantId);

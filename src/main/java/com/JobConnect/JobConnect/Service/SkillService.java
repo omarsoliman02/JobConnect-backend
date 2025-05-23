@@ -24,6 +24,10 @@ public class SkillService {
         return skillRepository.findById(id);
     }
     
+    public List<Skill> searchSkillsByName(String query) {
+        return skillRepository.findByNameContainingIgnoreCase(query);
+    }
+    
     public Skill saveSkill(Skill skill) {
         return skillRepository.save(skill);
     }
